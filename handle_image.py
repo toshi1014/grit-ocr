@@ -25,20 +25,15 @@ class HandleImage():
         line_list = lsd(grayed_inv)
 
         self.dot_list = []
-        cnt = 0
-        img = self.img.copy()
+        THICKNESS = 2       ## param: thickness of detected_line
+        self.detected_line_img = self.img.copy()
 
         for line in line_list:
             x1, y1, x2, y2, _ = list(map(lambda x: int(x), line))
             length = np.sqrt(sum((np.array([x1, y1]) - np.array([x2, y2]))**2))
             if length > self.min_length:
                 self.dot_list += [[x1, y1], [x2, y2]]
-                cnt += 1
-                img = cv2.line(img, (x1, y1), (x2, y2), (0,0,255), 1)
-
-        cv2.imwrite("detected_line.png", img)
-        print("line:", cnt)
-        print("dot:", len(self.dot_list))
+                cv2.line(self.detected_line_img, (x1, y1), (x2, y2), (0,0,255), thickness=THICKNESS)
 
 
     def get_cluster_list(self):
@@ -66,21 +61,6 @@ class HandleImage():
         pred_label_list = kmeans.predict(self.ordered_cluster_center_list)
 
         self.cluster_list = [raw_cluster_list[i] for i in pred_label_list]
-
-        # DEBUG:
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(1,1,1)
-        # for c in self.ordered_cluster_center_list:
-        #     ax1.scatter(c[0], c[1], color="white")
-        # for i in range(56):
-        #     ax1.annotate(i, self.ordered_cluster_center_list[i])
-        # for cluster_now in self.cluster_list:
-        #     ax1.scatter([xy[0] for xy in cluster_now], [xy[1] for xy in cluster_now])
-        # ax1.xaxis.tick_top()
-        # ax1.axis("square")
-        # ax1.set_aspect("equal")
-        # plt.gca().invert_yaxis()
-        # plt.show()
 
 
     def get_grid_center(self, idx1, idx2, idx3, idx4):
@@ -177,13 +157,6 @@ class HandleImage():
             self.grid_center = self.get_grid_center(i, (i+(self.row+1)), (i+1), (i+(self.row+1)+1))
 
             self.grid_list.append(self.get_vertices(self.get_rectangle_sides()))
-
-        # DEBUG:
-        # img = self.img.copy()
-        # for grid in self.grid_list:
-        #     for vertex in grid:
-        #         cv2.circle(img, vertex, radius=0, color=(0,0,255))
-        # cv2.imwrite("vertex.png", img)
 
 
     def get_transformed_grid_img(self, grid):
