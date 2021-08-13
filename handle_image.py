@@ -14,6 +14,11 @@ class HandleImage():
         self.row = row_
         self.column = column_
 
+        self.get_dot_of_line()
+        self.get_cluster_list()
+        self.get_grid_list()
+        self.read_text()
+
 
     def get_dot_of_line(self):
         grayed = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
@@ -73,6 +78,8 @@ class HandleImage():
         # for cluster_now in self.cluster_list:
         #     ax1.scatter([xy[0] for xy in cluster_now], [xy[1] for xy in cluster_now])
         # ax1.xaxis.tick_top()
+        # ax1.axis("square")
+        # ax1.set_aspect("equal")
         # plt.gca().invert_yaxis()
         # plt.show()
 
@@ -88,6 +95,7 @@ class HandleImage():
         abs_list = list(map(lambda x: sum((abs(x - self.grid_center))**2), cluster))
         min_idx = abs_list.index(min(abs_list))
         return min_idx
+
 
     ## return nearest 2 dots from grid_center
     def get_nearest_2(self, cluster):
@@ -178,10 +186,33 @@ class HandleImage():
         #         cv2.circle(img, vertex, radius=0, color=(0,0,255))
         # cv2.imwrite("vertex.png", img)
 
+
+    def get_transformed_grid_img(self, grid):
+        original_vertices = np.float32(grid)
+
+        x_list = [xy[0] for xy in grid]
+        y_list = [xy[1] for xy in grid]
+        x_min, x_max = min(x_list), max(x_list)
+        y_min, y_max = min(y_list), max(y_list)
+
+        transfered_vertices = np.float32([[0, 0], [x_max-x_min, 0], [0, y_max-y_min], [x_max-x_min, y_max-y_min]])
+
+        img = self.img.copy()
+        M = cv2.getPerspectiveTransform(original_vertices, transfered_vertices)
+        transformed_grid_img = cv2.warpPerspective(img, M, (x_max-x_min, y_max-y_min))
+
+        return transformed_grid_img
+
+
+    def read_text(self):
+        for grid in self.grid_list:
+            transformed_grid_img = self.get_transformed_grid_img(grid)
+
+
+
+
+
 img_path = "calender.png"
 min_length = 40
 row, column = [6, 7]
 handle_image = HandleImage(img_path, min_length, row, column)
-handle_image.get_dot_of_line()
-handle_image.get_cluster_list()
-handle_image.get_grid_list()
