@@ -5,6 +5,10 @@ from PIL import Image
 from handle_image import  HandleImage
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+
+
+DIRNAME = "dst"
 
 
 class ReadContents(HandleImage):
@@ -26,16 +30,38 @@ class ReadContents(HandleImage):
         return content
 
 
-    def test(self, test_label_arr, export_grid_img=False):
-        if export_grid_img:
+    def test(self, test_label_arr, check_all_vertices=False, export_img=False):
+        if check_all_vertices:
+            fig = plt.figure()
+            ax1 = fig.add_subplot(1,1,1)
+            for xy in self.ordered_cluster_center_list:
+                ax1.scatter(xy[0], xy[1], color="white")
+            for i in range((self.row+1)*(self.column+1)):
+                ax1.annotate(i, self.ordered_cluster_center_list[i])
+            for cluster_now in self.cluster_list:
+                ax1.scatter([xy[0] for xy in cluster_now], [xy[1] for xy in cluster_now])
+            ax1.xaxis.tick_top()
+            ax1.set_aspect("equal")
+            plt.gca().invert_yaxis()
+            plt.show()
+
+        if export_img:
             try:
-                os.mkdir("grid_img")
+                os.mkdir(DIRNAME)
             except:
                 pass
 
+            cv2.imwrite(DIRNAME + "/detected_line.png", self.detected_line_img)
+
+            vertices_img = self.img.copy()
+            for grid in self.grid_list:
+                for vertex in grid:
+                    cv2.circle(vertices_img, vertex, radius=0, color=(0,0,255))
+            cv2.imwrite(DIRNAME + "/vertices.png", vertices_img)
+
         correct = 0
         sum = 0
-        print("\nidx\tpredict\tlabel\tis_correct")
+        print("\nidx\tpredict\tlabel\tis_correct\n")
 
         for idx, grid in enumerate(self.grid_list):
             transformed_grid_img = self.get_transformed_grid_img(grid)
@@ -45,8 +71,8 @@ class ReadContents(HandleImage):
             column = sum // self.row
             label = str(test_label_arr[row][column])
 
-            if export_grid_img:
-                filename = "grid_img/" + str(row) + "-" + str(column) + ".png"
+            if export_img:
+                filename = DIRNAME + "/" + str(row) + "-" + str(column) + ".png"
                 cv2.imwrite(filename, transformed_grid_img)
 
             if content == label:
