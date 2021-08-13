@@ -4,6 +4,7 @@ import pyocr.builders
 from PIL import Image
 from handle_image import  HandleImage
 import numpy as np
+import os
 
 
 class ReadContents(HandleImage):
@@ -25,7 +26,13 @@ class ReadContents(HandleImage):
         return content
 
 
-    def test(self, test_label_arr, ignore_idx_list=[]):
+    def test(self, test_label_arr, ignore_idx_list=[], export_grid_img=False):
+        if export_grid_img:
+            try:
+                os.mkdir("grid_img")
+            except:
+                pass
+
         correct = 0
         sum = 0
         print("\nidx\tpredict\tlabel\tis_correct")
@@ -40,6 +47,10 @@ class ReadContents(HandleImage):
             row = sum % self.row
             column = sum // self.row
             label = str(test_label_arr[row][column])
+
+            if export_grid_img:
+                filename = "grid_img/" + str(row) + "-" + str(column) + ".png"
+                cv2.imwrite(filename, transformed_grid_img)
 
             if content == label:
                 correct += 1
