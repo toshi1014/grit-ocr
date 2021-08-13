@@ -3,6 +3,7 @@ import pyocr
 import pyocr.builders
 from PIL import Image
 from handle_image import  HandleImage
+import numpy as np
 
 
 class ReadContents(HandleImage):
@@ -24,7 +25,7 @@ class ReadContents(HandleImage):
         return content
 
 
-    def test(self, test_label_list, ignore_idx_list=[]):
+    def test(self, test_label_arr, ignore_idx_list=[]):
         correct = 0
         sum = 0
         print("\nidx\tpredict\tlabel\tis_correct")
@@ -36,7 +37,9 @@ class ReadContents(HandleImage):
             transformed_grid_img = self.get_transformed_grid_img(grid)
             content = self.read_grid(transformed_grid_img)
 
-            label = str(test_label_list[sum])
+            row = sum % self.row
+            column = sum // self.row
+            label = str(test_label_arr[row][column])
 
             if content == label:
                 correct += 1
@@ -52,9 +55,12 @@ class ReadContents(HandleImage):
 
     def read(self):
         content_list = []
+        cnt = 0
         for grid in self.grid_list:
             transformed_grid_img = self.get_transformed_grid_img(grid)
+            cnt += 1
             content = self.read_grid(transformed_grid_img)
             content_list.append(content)
 
-        return content_list
+        clm_row_arr = np.reshape(content_list, (self.column, self.row))
+        return np.transpose(clm_row_arr)
