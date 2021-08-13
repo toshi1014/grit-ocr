@@ -26,7 +26,7 @@ class ReadContents(HandleImage):
         return content
 
 
-    def test(self, test_label_arr, ignore_idx_list=[], export_grid_img=False):
+    def test(self, test_label_arr, export_grid_img=False):
         if export_grid_img:
             try:
                 os.mkdir("grid_img")
@@ -38,9 +38,6 @@ class ReadContents(HandleImage):
         print("\nidx\tpredict\tlabel\tis_correct")
 
         for idx, grid in enumerate(self.grid_list):
-            if idx in ignore_idx_list:
-                continue
-
             transformed_grid_img = self.get_transformed_grid_img(grid)
             content = self.read_grid(transformed_grid_img)
 
