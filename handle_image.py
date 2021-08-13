@@ -17,7 +17,6 @@ class HandleImage():
         self.get_dot_of_line()
         self.get_cluster_list()
         self.get_grid_list()
-        self.read_text()
 
 
     def get_dot_of_line(self):
@@ -202,17 +201,3 @@ class HandleImage():
         transformed_grid_img = cv2.warpPerspective(img, M, (x_max-x_min, y_max-y_min))
 
         return transformed_grid_img
-
-
-    def read_text(self):
-        for grid in self.grid_list:
-            transformed_grid_img = self.get_transformed_grid_img(grid)
-
-
-
-
-
-img_path = "calender.png"
-min_length = 40
-row, column = [6, 7]
-handle_image = HandleImage(img_path, min_length, row, column)
