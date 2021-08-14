@@ -1,2 +1,4 @@
 env1/
+__pycache__/
 *.png
+memo.txt

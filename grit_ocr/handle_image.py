@@ -14,6 +14,10 @@ class HandleImage():
         self.row = row_
         self.column = column_
 
+        self.get_dot_of_line()
+        self.get_cluster_list()
+        self.get_grid_list()
+
 
     def get_dot_of_line(self):
         grayed = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
@@ -21,20 +25,15 @@ class HandleImage():
         line_list = lsd(grayed_inv)
 
         self.dot_list = []
-        cnt = 0
-        img = self.img.copy()
+        THICKNESS = 2       ## param: thickness of detected_line
+        self.detected_line_img = self.img.copy()
 
         for line in line_list:
             x1, y1, x2, y2, _ = list(map(lambda x: int(x), line))
             length = np.sqrt(sum((np.array([x1, y1]) - np.array([x2, y2]))**2))
             if length > self.min_length:
                 self.dot_list += [[x1, y1], [x2, y2]]
-                cnt += 1
-                img = cv2.line(img, (x1, y1), (x2, y2), (0,0,255), 1)
-
-        cv2.imwrite("detected_line.png", img)
-        print("line:", cnt)
-        print("dot:", len(self.dot_list))
+                cv2.line(self.detected_line_img, (x1, y1), (x2, y2), (0,0,255), thickness=THICKNESS)
 
 
     def get_cluster_list(self):
@@ -63,19 +62,6 @@ class HandleImage():
 
         self.cluster_list = [raw_cluster_list[i] for i in pred_label_list]
 
-        # DEBUG:
-        # fig = plt.figure()
-        # ax1 = fig.add_subplot(1,1,1)
-        # for c in self.ordered_cluster_center_list:
-        #     ax1.scatter(c[0], c[1], color="white")
-        # for i in range(56):
-        #     ax1.annotate(i, self.ordered_cluster_center_list[i])
-        # for cluster_now in self.cluster_list:
-        #     ax1.scatter([xy[0] for xy in cluster_now], [xy[1] for xy in cluster_now])
-        # ax1.xaxis.tick_top()
-        # plt.gca().invert_yaxis()
-        # plt.show()
-
 
     def get_grid_center(self, idx1, idx2, idx3, idx4):
         sum = np.array([0.,0.])
@@ -88,6 +74,7 @@ class HandleImage():
         abs_list = list(map(lambda x: sum((abs(x - self.grid_center))**2), cluster))
         min_idx = abs_list.index(min(abs_list))
         return min_idx
+
 
     ## return nearest 2 dots from grid_center
     def get_nearest_2(self, cluster):
@@ -126,6 +113,7 @@ class HandleImage():
             b = line[0][1] - a*line[0][0]
 
         return a, b
+        
 
     def get_cross_point(self, line1, line2):
         a1, b1 = self.get_linear_function(line1)
@@ -171,17 +159,19 @@ class HandleImage():
 
             self.grid_list.append(self.get_vertices(self.get_rectangle_sides()))
 
-        # DEBUG:
-        # img = self.img.copy()
-        # for grid in self.grid_list:
-        #     for vertex in grid:
-        #         cv2.circle(img, vertex, radius=0, color=(0,0,255))
-        # cv2.imwrite("vertex.png", img)
 
-img_path = "calender.png"
-min_length = 40
-row, column = [6, 7]
-handle_image = HandleImage(img_path, min_length, row, column)
-handle_image.get_dot_of_line()
-handle_image.get_cluster_list()
-handle_image.get_grid_list()
+    def get_transformed_grid_img(self, grid):
+        original_vertices = np.float32(grid)
+
+        x_list = [xy[0] for xy in grid]
+        y_list = [xy[1] for xy in grid]
+        x_min, x_max = min(x_list), max(x_list)
+        y_min, y_max = min(y_list), max(y_list)
+
+        transfered_vertices = np.float32([[0, 0], [x_max-x_min, 0], [0, y_max-y_min], [x_max-x_min, y_max-y_min]])
+
+        img = self.img.copy()
+        M = cv2.getPerspectiveTransform(original_vertices, transfered_vertices)
+        transformed_grid_img = cv2.warpPerspective(img, M, (x_max-x_min, y_max-y_min))
+
+        return transformed_grid_img
