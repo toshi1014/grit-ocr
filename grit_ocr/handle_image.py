@@ -20,7 +20,10 @@ class HandleImage():
 
 
     def get_dot_of_line(self):
-        grayed = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        try:
+            grayed = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        except:
+            raise Exception("cannot read image, check image path")
         grayed_inv = cv2.bitwise_not(grayed)        ## color inversion: make easy to find lines
         line_list = lsd(grayed_inv)
 
@@ -113,7 +116,7 @@ class HandleImage():
             b = line[0][1] - a*line[0][0]
 
         return a, b
-        
+
 
     def get_cross_point(self, line1, line2):
         a1, b1 = self.get_linear_function(line1)
