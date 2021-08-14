@@ -25,7 +25,8 @@ class HandleImage():
         except:
             raise Exception("cannot read image, check image path")
         grayed_inv = cv2.bitwise_not(grayed)        ## color inversion: make easy to find lines
-        line_list = lsd(grayed_inv)
+        ret, threshed = cv2.threshold(grayed_inv, 127, 255, cv2.THRESH_BINARY)
+        line_list = lsd(threshed)
 
         self.dot_list = []
         THICKNESS = 2       ## param: thickness of detected_line
