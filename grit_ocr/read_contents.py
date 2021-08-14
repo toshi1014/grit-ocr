@@ -2,11 +2,10 @@ import cv2
 import pyocr
 import pyocr.builders
 from PIL import Image
-from handle_image import  HandleImage
+from .handle_image import  HandleImage
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-
 
 DIRNAME = "dst"
 

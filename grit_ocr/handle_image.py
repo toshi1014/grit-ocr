@@ -113,6 +113,7 @@ class HandleImage():
             b = line[0][1] - a*line[0][0]
 
         return a, b
+        
 
     def get_cross_point(self, line1, line2):
         a1, b1 = self.get_linear_function(line1)
