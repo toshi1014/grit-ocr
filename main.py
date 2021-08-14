@@ -1,10 +1,9 @@
-from handle_image import HandleImage
-from read_contents import ReadContents
+from grit_ocr import *
 import numpy as np
 
-img_path = "sample.png"
-min_line_length = 40
-row, column = [7, 3]
+img_path = "img/sample.png"
+min_line_length = 40        ## minimum length of line to be detected
+row, column = [7, 3]        ## 7x3 grid
 read_contents = ReadContents(img_path, min_line_length, row, column)
 
 test_label_list = np.array([
@@ -17,8 +16,10 @@ test_label_list = np.array([
     ["2021", "12:00", "4649"],
 ])
 
-ignore_idx_list = [
-]
+print("\n\ttest")
+read_contents.test(test_label_list, check_all_vertices=True, export_img=True)
 
-read_contents.test(test_label_list, ignore_idx_list)
+print("==============================")
+print("\n\tcontents\n")
 print(read_contents.read())
+print()
